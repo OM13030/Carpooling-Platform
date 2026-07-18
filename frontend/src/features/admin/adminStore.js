@@ -5,6 +5,8 @@ export const useAdminStore = create((set, get) => ({
   stats: null,
   employees: [],
   totalEmployees: 0,
+  vehicles: [],
+  totalVehicles: 0,
   carpoolConfig: null,
   loading: false,
   error: null,
@@ -30,6 +32,46 @@ export const useAdminStore = create((set, get) => ({
       });
     } catch (err) {
       set({ error: 'Failed to fetch employees list', loading: false });
+    }
+  },
+
+  addEmployee: async (empData) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await apiClient.post('/org/employees', empData);
+      set({ loading: false });
+      return { success: true, employee: data.data };
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Failed to add employee';
+      set({ error: errMsg, loading: false });
+      return { success: false, error: errMsg };
+    }
+  },
+
+  fetchVehicles: async (page = 1, limit = 10) => {
+    set({ loading: true });
+    try {
+      const { data } = await apiClient.get(`/org/vehicles?page=${page}&limit=${limit}`);
+      set({ 
+        vehicles: data.data.vehicles,
+        totalVehicles: data.data.total,
+        loading: false 
+      });
+    } catch (err) {
+      set({ error: 'Failed to fetch vehicles list', loading: false });
+    }
+  },
+
+  addVehicle: async (vehicleData) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await apiClient.post('/org/vehicles', vehicleData);
+      set({ loading: false });
+      return { success: true, vehicle: data.data };
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Failed to add vehicle';
+      set({ error: errMsg, loading: false });
+      return { success: false, error: errMsg };
     }
   },
 

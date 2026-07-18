@@ -39,9 +39,32 @@ const toggleEmployeeStatus = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, employee, `Employee status changed to ${status} successfully`));
 });
 
+const getVehicles = asyncHandler(async (req, res) => {
+  const orgId = req.user.organizationId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const result = await organizationService.getOrgVehicles(orgId, page, limit);
+  res.status(200).json(new ApiResponse(200, result, 'Vehicles list retrieved successfully'));
+});
+
+const addEmployee = asyncHandler(async (req, res) => {
+  const orgId = req.user.organizationId;
+  const employee = await organizationService.createEmployee(orgId, req.body);
+  res.status(201).json(new ApiResponse(201, employee, 'Employee created successfully'));
+});
+
+const addVehicle = asyncHandler(async (req, res) => {
+  const orgId = req.user.organizationId;
+  const vehicle = await organizationService.createVehicle(orgId, req.body);
+  res.status(201).json(new ApiResponse(201, vehicle, 'Vehicle registered successfully'));
+});
+
 module.exports = {
   getCarpoolConfig,
   updateCarpoolConfig,
   getEmployees,
   toggleEmployeeStatus,
+  getVehicles,
+  addEmployee,
+  addVehicle
 };
