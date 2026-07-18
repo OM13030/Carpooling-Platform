@@ -147,7 +147,7 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-[#121113] text-[#c1c1c1]">
       {/* Header bar */}
-      <header className="bg-[#121212] border-b border-border/80 sticky top-0 z-40 px-4 md:px-8 py-3.5 flex items-center justify-between">
+      <header className="bg-[#121212] border-b border-border/80 relative z-40 px-4 md:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="bg-primary/10 p-2 rounded-lg border border-primary/20">

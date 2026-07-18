@@ -162,15 +162,15 @@ export const AdminDashboard = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Top statistics summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-[#121212] border-border/80 p-5 flex flex-col justify-between">
+        <Card className="border-border/80 p-5 flex flex-col justify-between">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block font-semibold">Total Employees</span>
-          <span className="text-3xl font-extrabold text-white font-mono mt-2">{totalEmployees || stats?.totalEmployees || 48}</span>
+          <span className="text-3xl font-extrabold text-foreground font-mono mt-2">{totalEmployees || stats?.totalEmployees || 48}</span>
         </Card>
-        <Card className="bg-[#121212] border-border/80 p-5 flex flex-col justify-between">
+        <Card className="border-border/80 p-5 flex flex-col justify-between">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block font-semibold">Registered Vehicles</span>
-          <span className="text-3xl font-extrabold text-white font-mono mt-2">{totalVehicles || stats?.totalVehicles || 22}</span>
+          <span className="text-3xl font-extrabold text-foreground font-mono mt-2">{totalVehicles || stats?.totalVehicles || 22}</span>
         </Card>
-        <Card className="bg-[#121212] border-border/80 p-5 flex flex-col justify-between">
+        <Card className="border-border/80 p-5 flex flex-col justify-between">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block font-semibold">Rides This Month</span>
           <span className="text-3xl font-extrabold text-[#3a86ff] font-mono mt-2">{stats?.totalTrips || 163}</span>
         </Card>
