@@ -185,7 +185,7 @@ export const AdminDashboard = () => {
             className={`px-6 py-3.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
               activeTab === tab 
                 ? 'border-primary text-primary bg-[#222222]/10 font-extrabold' 
-                : 'border-transparent text-muted-foreground hover:text-white'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab === 'employees' && 'Employees'}
