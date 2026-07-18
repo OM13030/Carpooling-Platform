@@ -2,10 +2,41 @@ const router = require('express').Router();
 const miscController = require('../controllers/misc.controller');
 const { auth, requireEmployee } = require('../middlewares/auth');
 
+const cheerio = require('cheerio');
+
 router.use(auth);
 
-router.get('/live-fuel-price', (req, res) => {
-  res.status(200).json({ success: true, price: Number((96.50 + Math.random() * 5).toFixed(2)) });
+router.get('/live-fuel-price', async (req, res) => {
+  try {
+    const response = await fetch('https://www.goodreturns.in/petrol-price.html', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    let price = 96.50;
+
+    $('table tr').each((i, el) => {
+      const text = $(el).text().replace(/\s+/g, ' ').trim();
+      if (text.startsWith('Gujarat')) {
+        const parts = text.split(' ');
+        if (parts[1]) {
+          const priceStr = parts[1].replace('₹', '');
+          const parsed = parseFloat(priceStr);
+          if (!isNaN(parsed)) {
+            price = parsed;
+          }
+        }
+      }
+    });
+
+    res.status(200).json({ success: true, price });
+  } catch (err) {
+    res.status(200).json({ success: true, price: 96.50 });
+  }
 });
 
 router.use(requireEmployee);
