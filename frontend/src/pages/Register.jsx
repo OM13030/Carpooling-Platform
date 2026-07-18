@@ -85,7 +85,7 @@ export const Register = ({ registerOrgOnly = false }) => {
   const handleGoogleSignup = async () => {
     setLocalError('');
     setSuccessMsg('');
-    const idToken = `mock_GoogleUser_${Math.floor(1000 + Math.random() * 9000)}`;
+    const idToken = `mock_Aarav.Sharma`;
     const result = await loginGoogle(idToken);
     if (result.success) {
       if (result.onboardingRequired) {
