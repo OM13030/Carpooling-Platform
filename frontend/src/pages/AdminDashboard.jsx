@@ -92,9 +92,12 @@ export const AdminDashboard = () => {
     setSuccessMsg('');
     try {
       const { data } = await apiClient.get('/misc/live-fuel-price');
-      if (data.success) {
-        setConfigData(prev => ({ ...prev, fuelPrice: data.price }));
-        setSuccessMsg(`Fuel price successfully loaded from API: Rs. ${data.price} / Litre`);
+      if (data.success && data.data) {
+        const livePrice = data.data.price || 96.50;
+        setConfigData(prev => ({ ...prev, fuelPrice: livePrice }));
+        setSuccessMsg(`Fuel price successfully loaded from API: Rs. ${livePrice} / Litre`);
+      } else {
+        setErrorMsg('Failed to parse fuel price from API response.');
       }
     } catch (err) {
       setErrorMsg('Failed to call fuel price API.');
