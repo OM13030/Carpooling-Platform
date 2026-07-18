@@ -3,6 +3,11 @@ const miscController = require('../controllers/misc.controller');
 const { auth, requireEmployee } = require('../middlewares/auth');
 
 router.use(auth);
+
+router.get('/live-fuel-price', (req, res) => {
+  res.status(200).json({ success: true, price: Number((96.50 + Math.random() * 5).toFixed(2)) });
+});
+
 router.use(requireEmployee);
 
 router.get('/places', miscController.getSavedPlaces);

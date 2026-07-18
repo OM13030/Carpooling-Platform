@@ -58,6 +58,7 @@ export const AdminDashboard = () => {
   const [configData, setConfigData] = useState({
     fuelPrice: 0,
     operationalCostPerKm: 0,
+    costPerKm: 8.00,
     rideCommissionPercent: 0,
     walletMinimumBalance: 0,
     maxRideDistanceKm: 100
@@ -78,12 +79,27 @@ export const AdminDashboard = () => {
       setConfigData({
         fuelPrice: carpoolConfig.fuelPrice || 0,
         operationalCostPerKm: carpoolConfig.operationalCostPerKm || 0,
+        costPerKm: carpoolConfig.costPerKm || 8.00,
         rideCommissionPercent: carpoolConfig.rideCommissionPercent || 0,
         walletMinimumBalance: carpoolConfig.walletMinimumBalance || 0,
         maxRideDistanceKm: carpoolConfig.maxRideDistanceKm || 100
       });
     }
   }, [carpoolConfig]);
+
+  const fetchLiveFuelPrice = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const { data } = await apiClient.get('/misc/live-fuel-price');
+      if (data.success) {
+        setConfigData(prev => ({ ...prev, fuelPrice: data.price }));
+        setSuccessMsg(`Fuel price successfully loaded from API: Rs. ${data.price} / Litre`);
+      }
+    } catch (err) {
+      setErrorMsg('Failed to call fuel price API.');
+    }
+  };
 
   const handleConfigSubmit = async (e) => {
     e.preventDefault();
@@ -341,73 +357,91 @@ export const AdminDashboard = () => {
 
       {/* Settings Tab */}
       {activeTab === 'settings' && (
-        <Card className="bg-[#121212] border-border max-w-xl">
-          <div className="flex items-center gap-2 mb-6 border-b border-border/40 pb-4">
-            <SettingsIcon size={16} className="text-primary" />
-            <h3 className="font-bold text-sm text-white uppercase tracking-wider">Carpool Rules & Rates</h3>
-          </div>
-
-          <form onSubmit={handleConfigSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Fuel Price (₹ / Litre)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={configData.fuelPrice}
-                  onChange={(e) => setConfigData({ ...configData, fuelPrice: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2 text-xs text-white focus:outline-none font-mono"
-                />
+        <div className="space-y-8">
+          {/* Company Details */}
+          <Card className="bg-[#121212] border-border">
+            <h3 className="font-bold text-sm text-white uppercase tracking-wider mb-4 border-b border-border/40 pb-3">Company Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-xs">
+              <div className="flex justify-between border-b border-border/20 pb-2">
+                <span className="text-muted-foreground">Company Name</span>
+                <span className="font-bold text-white">{user?.organizationId?.name || 'Odoo Pvt. Ltd.'}</span>
               </div>
-              <div>
-                <label className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Operational Cost per km (₹)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={configData.operationalCostPerKm}
-                  onChange={(e) => setConfigData({ ...configData, operationalCostPerKm: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2 text-xs text-white focus:outline-none font-mono"
-                />
+              <div className="flex justify-between border-b border-border/20 pb-2">
+                <span className="text-muted-foreground">Industry</span>
+                <span className="font-bold text-white">{user?.organizationId?.industry || 'Software'}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/20 pb-2">
+                <span className="text-muted-foreground">Registered Address</span>
+                <span className="font-bold text-white">{user?.organizationId?.address || 'Gandhinagar'}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/20 pb-2">
+                <span className="text-muted-foreground">Admin Contact</span>
+                <span className="font-bold text-white">{user?.organizationId?.email || 'admin@odoo.com'}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/20 pb-2">
+                <span className="text-muted-foreground">Registered Employees</span>
+                <span className="font-bold text-white">{totalEmployees || 48}</span>
               </div>
             </div>
+          </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Ride Commission (%)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={configData.rideCommissionPercent}
-                  onChange={(e) => setConfigData({ ...configData, rideCommissionPercent: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2 text-xs text-white focus:outline-none font-mono"
-                />
+          {/* Carpooling Configuration */}
+          <Card className="bg-[#121212] border-border">
+            <h3 className="font-bold text-sm text-white uppercase tracking-wider mb-4 border-b border-border/40 pb-3">Carpooling Configuration</h3>
+            <form onSubmit={handleConfigSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Fuel Cost / Liter (Rs.)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={configData.fuelPrice}
+                      onChange={(e) => setConfigData({ ...configData, fuelPrice: parseFloat(e.target.value) || 0 })}
+                      className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none font-mono"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={fetchLiveFuelPrice}
+                      className="py-1 px-3 text-[10px] font-bold border-primary/20 hover:bg-primary/5 text-primary whitespace-nowrap"
+                    >
+                      Fetch Live Price
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Cost Per KM (Rs.)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={configData.costPerKm}
+                    onChange={(e) => setConfigData({ ...configData, costPerKm: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Travel Cost (Operational) / Km (Rs.)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={configData.operationalCostPerKm}
+                    onChange={(e) => setConfigData({ ...configData, operationalCostPerKm: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none font-mono"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Wallet Minimum Limit (₹)</label>
-                <input
-                  type="number"
-                  value={configData.walletMinimumBalance}
-                  onChange={(e) => setConfigData({ ...configData, walletMinimumBalance: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2 text-xs text-white focus:outline-none font-mono"
-                />
+
+              <div className="border-t border-border/40 pt-4 flex justify-end">
+                <Button type="submit" variant="primary" className="py-2.5 px-6 font-bold text-xs uppercase tracking-wider">
+                  Save Settings
+                </Button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Maximum Commute Range (km)</label>
-              <input
-                type="number"
-                value={configData.maxRideDistanceKm}
-                onChange={(e) => setConfigData({ ...configData, maxRideDistanceKm: parseInt(e.target.value) || 100 })}
-                className="w-full bg-[#222222] border border-border focus:border-primary rounded-xl px-4 py-2 text-xs text-white focus:outline-none font-mono"
-              />
-            </div>
-
-            <Button type="submit" variant="primary" className="w-full py-2.5 font-bold">
-              Save Rules Update
-            </Button>
-          </form>
-        </Card>
+            </form>
+          </Card>
+        </div>
       )}
 
       {/* Add Employee Modal */}

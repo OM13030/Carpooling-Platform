@@ -11,6 +11,7 @@ const organizationSchema = new mongoose.Schema(
     carpoolConfig: {
       fuelPrice: { type: Number, default: 0 },
       operationalCostPerKm: { type: Number, default: 0 },
+      costPerKm: { type: Number, default: 8.00 },
       rideCommissionPercent: { type: Number, default: 0 },
       walletMinimumBalance: { type: Number, default: 0 },
       maxRideDistanceKm: { type: Number, default: 100 },
