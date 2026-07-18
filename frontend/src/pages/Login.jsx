@@ -12,7 +12,7 @@ export const Login = () => {
   const [localError, setLocalError] = useState('');
   
   const navigate = useNavigate();
-  const { loginEmployee, loginAdmin, isAuthenticated, error, loading } = useAuthStore();
+  const { loginEmployee, loginAdmin, loginGoogle, isAuthenticated, error, loading } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -38,6 +38,21 @@ export const Login = () => {
 
     if (result.success) {
       navigate(isAdmin ? '/admin' : '/');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLocalError('');
+    const idToken = `mock_GoogleUser_${Math.floor(1000 + Math.random() * 9000)}`;
+    const result = await loginGoogle(idToken);
+    if (result.success) {
+      if (result.onboardingRequired) {
+        navigate('/onboarding');
+      } else {
+        navigate('/');
+      }
+    } else {
+      setLocalError(result.error || 'Google login failed.');
     }
   };
 
@@ -141,6 +156,16 @@ export const Login = () => {
               />
             </div>
 
+            <div className="flex justify-between items-center text-xs">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" className="rounded bg-[#222222] border-border text-primary focus:ring-primary w-3.5 h-3.5" />
+                <span>Remember me</span>
+              </label>
+              <Link to="/forgot-password" className="text-primary hover:underline font-semibold">
+                Forgot Password?
+              </Link>
+            </div>
+
             {(localError || error) && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl text-xs font-medium">
                 {localError || error}
@@ -155,6 +180,30 @@ export const Login = () => {
             >
               {loading ? 'Authenticating...' : 'Sign In'}
             </Button>
+
+            {!isAdmin && (
+              <>
+                <div className="relative flex items-center justify-center my-4">
+                  <div className="border-t border-border/60 w-full absolute"></div>
+                  <span className="bg-[#121113] px-3 text-[10px] text-muted-foreground z-10 uppercase tracking-widest">Or</span>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleLogin}
+                  className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 border-border hover:bg-[#222222]/30 text-white"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.47 14.97 1 12 1 7.35 1 3.41 3.67 1.5 7.57l3.92 3.04c.92-2.76 3.5-4.57 6.58-4.57z"/>
+                    <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/>
+                    <path fill="#FBBC05" d="M5.42 10.61c-.24-.73-.38-1.51-.38-2.31s.14-1.58.38-2.31L1.5 2.95C.54 4.88 0 7.07 0 9.39s.54 4.51 1.5 6.44l3.92-3.04z"/>
+                    <path fill="#34A853" d="M12 18.25c-3.08 0-5.66-1.81-6.58-4.57L1.5 16.72c1.91 3.9 5.85 6.57 10.5 6.57 3.19 0 6.07-1.07 8.09-2.91l-3.76-2.91c-1.16.77-2.65 1.25-4.33 1.25z"/>
+                  </svg>
+                  Continue with Google
+                </Button>
+              </>
+            )}
           </form>
 
           {!isAdmin && (

@@ -189,6 +189,155 @@ class AuthService {
       await organizationRepository.updateAdmin(userId, { refreshTokenHash: null });
     }
   }
+
+  async loginGoogle(idToken) {
+    let payload = null;
+    try {
+      if (idToken.startsWith('mock_')) {
+        const namePart = idToken.split('_')[1];
+        payload = {
+          email: `${namePart.toLowerCase()}@odooksv.com`,
+          name: namePart,
+          sub: `google_${namePart}`
+        };
+      } else {
+        const parts = idToken.split('.');
+        if (parts.length === 3) {
+          const base64Url = parts[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+          payload = JSON.parse(jsonPayload);
+        }
+      }
+    } catch (err) {
+      throw new ApiError(400, 'Invalid Firebase Token');
+    }
+
+    if (!payload || !payload.email) {
+      throw new ApiError(400, 'Token does not contain valid email claim');
+    }
+
+    const email = payload.email.toLowerCase();
+    let employee = await employeeRepository.findByEmail(email);
+    let onboardingRequired = false;
+
+    if (!employee) {
+      const orgs = await organizationRepository.listAllOrganizations();
+      const orgId = orgs[0]?._id;
+      if (!orgId) throw new ApiError(500, 'Organization must exist to proceed');
+
+      employee = await mongoose.model('Employee').create({
+        organizationId: orgId,
+        employeeCode: `EMP${Math.floor(1000 + Math.random() * 9000)}`,
+        name: payload.name || 'Google User',
+        email,
+        authProvider: 'google',
+        googleId: payload.sub,
+        isEmailVerified: true,
+        status: 'active'
+      });
+
+      await walletRepository.create({
+        employeeId: employee._id,
+        balance: 1000
+      });
+
+      onboardingRequired = true;
+    }
+
+    if (employee.status === 'disabled') {
+      throw new ApiError(401, 'This account is disabled');
+    }
+
+    const tokenPayload = { _id: employee._id, role: 'employee', organizationId: employee.organizationId };
+    const accessToken = generateAccessToken(tokenPayload);
+    const refreshToken = generateRefreshToken(tokenPayload);
+
+    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    await employeeRepository.update(employee._id, { refreshTokenHash });
+
+    return { employee, accessToken, refreshToken, onboardingRequired };
+  }
+
+  async verifyEmail(token) {
+    const employee = await mongoose.model('Employee').findOne({
+      emailVerificationTokenHash: token,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!employee) {
+      throw new ApiError(400, 'Verification token is invalid or has expired');
+    }
+
+    employee.isEmailVerified = true;
+    employee.emailVerificationTokenHash = undefined;
+    employee.emailVerificationExpires = undefined;
+    await employee.save();
+  }
+
+  async resendVerification(email) {
+    const employee = await employeeRepository.findByEmail(email.toLowerCase());
+    if (!employee) throw new ApiError(404, 'Employee not found');
+    if (employee.isEmailVerified) return;
+
+    const token = Math.random().toString(36).substr(2, 9);
+    employee.emailVerificationTokenHash = token;
+    employee.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+    await employee.save();
+
+    console.log(`[Email Mock Service] Verification link: http://localhost:5173/verify-email/${token}`);
+  }
+
+  async forgotPassword(email) {
+    const employee = await employeeRepository.findByEmail(email.toLowerCase());
+    if (!employee) throw new ApiError(404, 'Employee not found');
+
+    const token = Math.random().toString(36).substr(2, 9);
+    employee.passwordResetTokenHash = token;
+    employee.passwordResetExpires = Date.now() + 60 * 60 * 1000;
+    await employee.save();
+
+    console.log(`[Email Mock Service] Password reset link: http://localhost:5173/reset-password/${token}`);
+  }
+
+  async resetPassword(token, password) {
+    const employee = await mongoose.model('Employee').findOne({
+      passwordResetTokenHash: token,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!employee) {
+      throw new ApiError(400, 'Password reset token is invalid or has expired');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    employee.passwordHash = passwordHash;
+    employee.passwordResetTokenHash = undefined;
+    employee.passwordResetExpires = undefined;
+    employee.refreshTokenHash = undefined; // Invalidate current session logs
+    await employee.save();
+  }
+
+  async getMe(userId, role) {
+    if (role === 'admin') {
+      return organizationRepository.findAdminById(userId);
+    }
+    return employeeRepository.findById(userId);
+  }
+
+  async completeProfile(userId, role, data) {
+    if (role === 'admin') {
+      throw new ApiError(400, 'Onboarding is not available to admins');
+    }
+
+    const updates = {};
+    if (data.role) updates.role = data.role;
+    if (data.mobile) updates.mobile = data.mobile;
+    if (data.department) updates.department = data.department;
+    if (data.officeLocation) updates.officeLocation = data.officeLocation;
+
+    return employeeRepository.update(userId, updates);
+  }
 }
 
 module.exports = new AuthService();

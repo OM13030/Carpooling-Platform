@@ -39,7 +39,7 @@ export const Register = ({ registerOrgOnly = false }) => {
   });
 
   const navigate = useNavigate();
-  const { registerEmployee, registerOrg, loading, error } = useAuthStore();
+  const { registerEmployee, registerOrg, loginGoogle, loading, error } = useAuthStore();
 
   useEffect(() => {
     // Load organizations
@@ -79,6 +79,22 @@ export const Register = ({ registerOrgOnly = false }) => {
     if (result.success) {
       setSuccessMsg('Registration successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setLocalError('');
+    setSuccessMsg('');
+    const idToken = `mock_GoogleUser_${Math.floor(1000 + Math.random() * 9000)}`;
+    const result = await loginGoogle(idToken);
+    if (result.success) {
+      if (result.onboardingRequired) {
+        navigate('/onboarding');
+      } else {
+        navigate('/');
+      }
+    } else {
+      setLocalError(result.error || 'Google registration failed.');
     }
   };
 
@@ -270,6 +286,26 @@ export const Register = ({ registerOrgOnly = false }) => {
                 disabled={loading}
               >
                 {loading ? 'Processing...' : 'Register Account'}
+              </Button>
+
+              <div className="relative flex items-center justify-center my-4">
+                <div className="border-t border-border/60 w-full absolute"></div>
+                <span className="bg-[#121212] px-3 text-[10px] text-muted-foreground z-10 uppercase tracking-widest">Or</span>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleSignup}
+                className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 border-border hover:bg-[#222222]/30 text-white"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.47 14.97 1 12 1 7.35 1 3.41 3.67 1.5 7.57l3.92 3.04c.92-2.76 3.5-4.57 6.58-4.57z"/>
+                  <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/>
+                  <path fill="#FBBC05" d="M5.42 10.61c-.24-.73-.38-1.51-.38-2.31s.14-1.58.38-2.31L1.5 2.95C.54 4.88 0 7.07 0 9.39s.54 4.51 1.5 6.44l3.92-3.04z"/>
+                  <path fill="#34A853" d="M12 18.25c-3.08 0-5.66-1.81-6.58-4.57L1.5 16.72c1.91 3.9 5.85 6.57 10.5 6.57 3.19 0 6.07-1.07 8.09-2.91l-3.76-2.91c-1.16.77-2.65 1.25-4.33 1.25z"/>
+                </svg>
+                Continue with Google
               </Button>
             </form>
           ) : (

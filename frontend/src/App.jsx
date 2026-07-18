@@ -27,6 +27,10 @@ import SavedPlaces from './pages/SavedPlaces';
 import HelpCenter from './pages/HelpCenter';
 import ChatSupport from './pages/ChatSupport';
 import AdminLayout from './components/AdminLayout';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import Onboarding from './pages/Onboarding';
 
 // Icons
 import { Bell, Shield, User, Wallet as WalletIcon, LogOut, Landmark, Car, Menu, X, Sun, Moon, LayoutDashboard, Route as RouteIcon, CarFront, Settings as SettingsIcon, FileBarChart2, ChevronDown } from 'lucide-react';
@@ -339,6 +343,10 @@ export const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register-org" element={<Register registerOrgOnly={true} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
         {/* Private Employee routes */}
         <Route path="/" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />

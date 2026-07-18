@@ -104,6 +104,60 @@ const logout = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, null, 'Logged out successfully'));
 });
 
+const loginGoogle = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) throw new ApiError(400, 'idToken is required');
+
+  const { employee, accessToken, refreshToken, onboardingRequired } = await authService.loginGoogle(idToken);
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.status(200).json(new ApiResponse(200, { employee, accessToken, onboardingRequired }, 'Google login successful'));
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  await authService.verifyEmail(token);
+  res.status(200).json(new ApiResponse(200, null, 'Email verified successfully'));
+});
+
+const resendVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(400, 'Email is required');
+  await authService.resendVerification(email);
+  res.status(200).json(new ApiResponse(200, null, 'Verification email sent'));
+});
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(400, 'Email is required');
+  await authService.forgotPassword(email);
+  res.status(200).json(new ApiResponse(200, null, 'Password reset email sent'));
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  if (!password) throw new ApiError(400, 'New password is required');
+  await authService.resetPassword(token, password);
+  res.status(200).json(new ApiResponse(200, null, 'Password reset successfully'));
+});
+
+const getMe = asyncHandler(async (req, res) => {
+  const user = await authService.getMe(req.user._id, req.user.role);
+  res.status(200).json(new ApiResponse(200, user, 'Current user profile retrieved'));
+});
+
+const completeProfile = asyncHandler(async (req, res) => {
+  const updatedUser = await authService.completeProfile(req.user._id, req.user.role, req.body);
+  res.status(200).json(new ApiResponse(200, updatedUser, 'Profile completed successfully'));
+});
+
 const getOrganizations = asyncHandler(async (req, res, next) => {
   const orgs = await organizationRepository.listAllOrganizations();
   res.status(200).json(new ApiResponse(200, orgs, 'Organizations retrieved successfully'));
@@ -116,5 +170,12 @@ module.exports = {
   loginAdmin,
   refreshTokens,
   logout,
-  getOrganizations
+  getOrganizations,
+  loginGoogle,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+  getMe,
+  completeProfile
 };

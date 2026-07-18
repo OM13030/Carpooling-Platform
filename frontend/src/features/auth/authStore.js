@@ -74,6 +74,21 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  loginGoogle: async (idToken) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await apiClient.post('/auth/google', { idToken });
+      const { employee, accessToken, onboardingRequired } = data.data;
+      localStorage.setItem('accessToken', accessToken);
+      set({ user: employee, role: 'employee', accessToken, isAuthenticated: true, loading: false });
+      return { success: true, onboardingRequired, employee };
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Google Login failed';
+      set({ error: errMsg, loading: false });
+      return { success: false, error: errMsg };
+    }
+  },
+
   registerEmployee: async (formData) => {
     set({ loading: true, error: null });
     try {
