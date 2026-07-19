@@ -3,11 +3,17 @@ const nodeCron = require('node-cron');
 const rideRepository = require('../repositories/ride.repository');
 const vehicleRepository = require('../repositories/vehicle.repository');
 const organizationRepository = require('../repositories/organization.repository');
+const tripRepository = require('../repositories/trip.repository');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 
 class RideService {
   async publishRide(driverId, organizationId, rideData) {
+    const ongoingTrip = await tripRepository.findOngoingTripForEmployee(driverId);
+    if (ongoingTrip) {
+      throw new ApiError(400, 'You cannot offer a ride while you have an ongoing trip.');
+    }
+
     const activeVehicle = await vehicleRepository.findActiveByEmployeeId(driverId);
     if (!activeVehicle) {
       throw new ApiError(400, 'You must register at least one active vehicle to offer a ride');

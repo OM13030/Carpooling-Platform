@@ -16,6 +16,7 @@ import OfferRide from './pages/OfferRide';
 import TripTracking from './pages/TripTracking';
 import Wallet from './pages/Wallet';
 import Profile from './pages/Profile';
+import RideRequests from './pages/RideRequests';
 import AdminDashboard from './pages/AdminDashboard';
 import Settings from './pages/Settings';
 import FeatureModulePage from './pages/FeatureModulePage';
@@ -26,6 +27,7 @@ import RideHistory from './pages/RideHistory';
 import SavedPlaces from './pages/SavedPlaces';
 import HelpCenter from './pages/HelpCenter';
 import ChatSupport from './pages/ChatSupport';
+import Report from './pages/Report';
 import AdminLayout from './components/AdminLayout';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -153,7 +155,7 @@ const Layout = ({ children }) => {
             <div className="bg-primary/10 p-2 rounded-lg border border-primary/20">
               <Car className="text-primary w-5 h-5" />
             </div>
-            <span className="font-extrabold text-sm tracking-wider font-mono text-white">COMMUTE.ENT</span>
+            <span className="font-extrabold text-sm tracking-wider font-mono text-white">GoPool</span>
           </Link>
           <nav className="hidden xl:flex items-center gap-1.5 text-xs font-semibold">
             {navItems.map((item) => {
@@ -215,16 +217,36 @@ const Layout = ({ children }) => {
                         No notifications to show.
                       </div>
                     ) : (
-                      notifications.map(n => (
-                        <div key={n._id} className="text-xs border-b border-border/20 pb-2 last:border-0 last:pb-0">
-                          <div className="font-bold text-white flex items-center justify-between">
-                            {n.title}
-                            {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>}
+                      notifications.map(n => {
+                        const NotificationContent = (
+                          <div className={`text-xs border-b border-border/20 pb-2 last:border-0 last:pb-0 ${n.link ? 'hover:bg-[#222222]/50 p-2 -mx-2 rounded-xl transition-colors cursor-pointer' : ''}`}>
+                            <div className="font-bold text-white flex items-center justify-between">
+                              {n.title}
+                              {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
+                            <span className="text-[8px] text-muted-foreground font-mono block mt-1">{new Date(n.createdAt).toLocaleTimeString()}</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
-                          <span className="text-[8px] text-muted-foreground font-mono block mt-1">{new Date(n.createdAt).toLocaleTimeString()}</span>
-                        </div>
-                      ))
+                        );
+
+                        if (n.link) {
+                          return (
+                            <Link 
+                              key={n._id} 
+                              to={n.link} 
+                              onClick={() => {
+                                setShowNotifDropdown(false);
+                                if (!n.read) handleMarkAsRead(); // Mark as read when clicked
+                              }}
+                              className="block"
+                            >
+                              {NotificationContent}
+                            </Link>
+                          );
+                        }
+
+                        return <div key={n._id}>{NotificationContent}</div>;
+                      })
                     )}
                   </div>
                 </div>
@@ -357,13 +379,14 @@ export const App = () => {
         <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
         <Route path="/my-trips" element={<ProtectedRoute><Layout><MyTrips /></Layout></ProtectedRoute>} />
+        <Route path="/manage-requests/:rideId" element={<ProtectedRoute><Layout><RideRequests /></Layout></ProtectedRoute>} />
         <Route path="/my-vehicle" element={<ProtectedRoute><Layout><MyVehicle /></Layout></ProtectedRoute>} />
         <Route path="/wallet/payment-methods" element={<ProtectedRoute><Layout><PaymentMethods /></Layout></ProtectedRoute>} />
         <Route path="/ride-history" element={<ProtectedRoute><Layout><RideHistory /></Layout></ProtectedRoute>} />
         <Route path="/saved-places" element={<ProtectedRoute><Layout><SavedPlaces /></Layout></ProtectedRoute>} />
         <Route path="/help" element={<ProtectedRoute><Layout><HelpCenter /></Layout></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><Layout><ChatSupport /></Layout></ProtectedRoute>} />
-        <Route path="/report" element={<ProtectedRoute><Layout><FeatureModulePage title="Report" subtitle="Quick operational snapshots and exports for your commute activity." accent="Reports" emptyTitle="No reports available." emptyDescription="Generate ride, wallet or vehicle reports from the related modules." actionLabel="View Ride History" actionTo="/ride-history" /></Layout></ProtectedRoute>} />
+        <Route path="/report" element={<ProtectedRoute><Layout><Report /></Layout></ProtectedRoute>} />
 
         {/* Private Admin routes */}
         <Route path="/admin" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />

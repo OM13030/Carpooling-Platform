@@ -101,6 +101,7 @@ export const useTripsStore = create((set, get) => ({
           },
           distanceKm: locationUpdate.distanceKm !== undefined ? locationUpdate.distanceKm : state.activeTrip.distanceKm,
           durationMin: locationUpdate.durationMin !== undefined ? locationUpdate.durationMin : state.activeTrip.durationMin,
+          routePoints: locationUpdate.points || state.activeTrip.routePoints,
           locationUpdatedAt: locationUpdate.updatedAt
         }
       };

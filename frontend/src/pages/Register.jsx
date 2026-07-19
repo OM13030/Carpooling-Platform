@@ -125,7 +125,7 @@ export const Register = ({ registerOrgOnly = false }) => {
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Car className="text-primary w-5 h-5" />
-            <span className="font-bold text-sm tracking-wider font-mono text-white">COMMUTE.ENT</span>
+            <span className="font-bold text-sm tracking-wider font-mono text-white">GoPool</span>
           </div>
           <Link to="/login" className="text-xs text-primary font-semibold hover:underline">
             Already have an account? Sign In

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
-import { Search, ExternalLink, Loader2, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, ExternalLink, Loader2 } from 'lucide-react';
 import apiClient from '../api/apiClient';
 
 export const UberFallbackCard = ({ fallback, pickup, destination }) => {
   const [logging, setLogging] = useState(false);
-  const [showUrl, setShowUrl] = useState(false);
 
   // Log "shown" impression event on component mount
   useEffect(() => {
@@ -122,44 +121,6 @@ export const UberFallbackCard = ({ fallback, pickup, destination }) => {
             </Button>
           </motion.div>
         </div>
-
-        {/* Informational Warning about Desktop redirects */}
-        <div className="bg-[#222222]/40 rounded-xl p-3 border border-border/50 text-[10px] text-muted-foreground max-w-xs text-left space-y-1">
-          <div className="flex items-center gap-1.5 font-bold text-white mb-0.5">
-            <Info size={12} className="text-primary" />
-            <span>Desktop vs. Mobile Behavior</span>
-          </div>
-          <p className="leading-relaxed">
-            Universal deep links are designed to launch the **Uber mobile app** directly with pre-filled coordinates.
-          </p>
-          <p className="leading-relaxed">
-            On desktop web browsers, Uber requires you to log in first, which may strip the pre-filled coordinates during redirect.
-          </p>
-          
-          {/* Debug/Inspect URL section */}
-          <div className="pt-2">
-            <button
-              onClick={() => setShowUrl(!showUrl)}
-              className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-            >
-              {showUrl ? (
-                <>Hide Generated Link <ChevronUp size={11} /></>
-              ) : (
-                <>Inspect Generated Link <ChevronDown size={11} /></>
-              )}
-            </button>
-            
-            {showUrl && (
-              <div className="mt-1.5 p-2 bg-[#121212] border border-border/60 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono text-[9px] break-all text-white select-all">
-                {fallback?.deepLink}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <span className="text-[10px] text-muted-foreground block max-w-xs leading-relaxed">
-          * You'll be redirected to complete your booking on the Uber app or website.
-        </span>
       </div>
     </motion.div>
   );

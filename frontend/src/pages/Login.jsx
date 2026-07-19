@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/authStore';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Shield, User, Landmark, Leaf, Coins, Car } from 'lucide-react';
+import { Shield, User, Landmark, Leaf, Coins, Car, Sun, Moon } from 'lucide-react';
+import { useThemeStore } from '../App';
 
 export const Login = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -13,6 +14,7 @@ export const Login = () => {
   
   const navigate = useNavigate();
   const { loginEmployee, loginAdmin, loginGoogle, isAuthenticated, error, loading } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -57,7 +59,18 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#121113] text-[#c1c1c1]">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#121113] text-[#c1c1c1] relative">
+      {/* Theme Switcher */}
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={toggleTheme}
+          className="p-2.5 bg-[#222222]/60 hover:bg-[#222222] rounded-xl text-muted-foreground hover:text-white transition-all cursor-pointer border border-border/40 backdrop-blur-sm"
+          title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+      </div>
+
       {/* Left branding panel */}
       <div className="md:w-1/2 bg-[#121212] p-8 md:p-16 flex flex-col justify-between border-b md:border-b-0 md:border-r border-border relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -67,7 +80,7 @@ export const Login = () => {
           <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20">
             <Car className="text-primary w-6 h-6" />
           </div>
-          <span className="font-bold text-lg text-white font-mono tracking-wider">COMMUTE.ENT</span>
+          <span className="font-bold text-lg text-white font-mono tracking-wider">GoPool</span>
         </div>
 
         <div className="my-12 max-w-lg">

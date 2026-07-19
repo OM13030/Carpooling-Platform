@@ -27,7 +27,11 @@ class MiscRepository {
     return Notification.countDocuments({ employeeId, read: false });
   }
 
-  async createNotification(data) {
+  async createNotification(data, options = {}) {
+    if (options.session) {
+      const [doc] = await Notification.create([data], { session: options.session });
+      return doc;
+    }
     return Notification.create(data);
   }
 
@@ -57,7 +61,11 @@ class MiscRepository {
   }
 
   // Audit Logs
-  async createAuditLog(data) {
+  async createAuditLog(data, options = {}) {
+    if (options.session) {
+      const [doc] = await AuditLog.create([data], { session: options.session });
+      return doc;
+    }
     return AuditLog.create(data);
   }
 }

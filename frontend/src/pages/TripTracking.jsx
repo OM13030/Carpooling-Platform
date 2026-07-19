@@ -203,6 +203,7 @@ export const TripTracking = () => {
             pickup={pickupPoint}
             destination={destinationPoint}
             vehicleLoc={vehicleLoc}
+            routePoints={activeTrip.routePoints}
             height="450px"
           />
         </div>

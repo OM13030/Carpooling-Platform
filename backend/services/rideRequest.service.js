@@ -8,6 +8,11 @@ const transactionHelper = require('../utils/transactionHelper');
 
 class RideRequestService {
   async createRequest(passengerId, rideId, seatsRequested, pickupPoint) {
+    const ongoingTrip = await tripRepository.findOngoingTripForEmployee(passengerId);
+    if (ongoingTrip) {
+      throw new ApiError(400, 'You cannot book a ride while you have an ongoing trip.');
+    }
+
     const ride = await rideRepository.findById(rideId);
     if (!ride) throw new ApiError(404, 'Ride not found');
 
@@ -36,8 +41,17 @@ class RideRequestService {
       const socketManager = require('../sockets/socketManager');
       const driverIdStr = ride.driverId._id ? ride.driverId._id.toString() : ride.driverId.toString();
       socketManager.emitToUser(driverIdStr, 'request:received', request);
+      
+      // Also send persistent notification so driver sees it in bell icon
+      await miscRepository.createNotification({
+        employeeId: driverIdStr,
+        type: 'ride_requested',
+        title: 'New Ride Request',
+        message: `Someone requested ${seatsRequested} seat(s) on your ride.`,
+        link: `/manage-requests/${rideId}`
+      });
     } catch (err) {
-      // Ignore socket errors in request flow
+      // Ignore socket/notification errors in request flow
     }
 
     return request;
@@ -119,7 +133,8 @@ class RideRequestService {
         employeeId: request.passengerId._id,
         type: 'ride_accepted',
         title: 'Ride Request Accepted!',
-        message: `Your request for ${request.seatsRequested} seat(s) has been accepted.`
+        message: `Your request for ${request.seatsRequested} seat(s) has been accepted.`,
+        link: `/trip/${trip._id}`
       }, { session });
 
       await miscRepository.createAuditLog({
@@ -175,7 +190,8 @@ class RideRequestService {
         employeeId: request.passengerId._id,
         type: 'ride_cancelled',
         title: 'Ride Request Declined',
-        message: `Your request for a ride has been declined.`
+        message: `Your request for a ride has been declined.`,
+        link: `/my-trips`
       }, { session });
 
       await transactionHelper.commitTransaction(session);

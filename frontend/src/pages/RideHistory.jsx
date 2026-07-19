@@ -138,7 +138,7 @@ const RideHistory = () => {
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all border ${
                   timeFilter === f.val 
                     ? 'bg-primary/10 border-primary/30 text-white' 
-                    : 'bg-[#222222]/30 border-border/60 text-muted-foreground hover:text-white'
+                    : 'bg-[#222222]/30 border-border/60 text-muted-foreground hover:text-black'
                 }`}
               >
                 {f.label}

@@ -21,6 +21,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
+        'ride_requested',
         'ride_accepted',
         'ride_cancelled',
         'ride_started',
@@ -35,6 +36,7 @@ const notificationSchema = new mongoose.Schema(
     },
     title: String,
     message: String,
+    link: String,
     read: { type: Boolean, default: false },
   },
   { timestamps: true }

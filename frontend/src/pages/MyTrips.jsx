@@ -112,7 +112,7 @@ const MyTrips = () => {
             className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all whitespace-nowrap ${
               activeTab === tab 
                 ? 'border-primary text-white bg-primary/5' 
-                : 'border-transparent text-muted-foreground hover:text-white'
+                : 'border-transparent text-muted-foreground hover:text-black'
             }`}
           >
             {tab}
@@ -180,7 +180,7 @@ const MyTrips = () => {
                     <span className="text-muted-foreground block text-[9px] uppercase font-mono">Fare Share</span>
                     <span className="text-white font-bold font-mono">₹{ride.farePerSeat} / Seat</span>
                   </div>
-                  <Link to={`/trip/active`}>
+                  <Link to={`/manage-requests/${ride._id}`}>
                     <Button variant="outline" size="sm">Manage Requests</Button>
                   </Link>
                 </div>

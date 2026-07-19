@@ -53,7 +53,8 @@ class TripService {
           employeeId: p.employeeId,
           type: 'ride_started',
           title: 'Your Trip Has Started!',
-          message: 'The driver has started the journey. You can track live progress now.'
+          message: 'The driver has started the journey. You can track live progress now.',
+          link: `/trip/${tripId}`
         });
       }
     }
@@ -195,7 +196,8 @@ class TripService {
             employeeId: p.employeeId,
             type: 'payment_successful',
             title: 'Payment Successful',
-            message: `₹${p.fareShare} has been paid from your wallet for trip.`
+            message: `₹${p.fareShare} has been paid from your wallet for trip.`,
+            link: `/ride-history`
           }, { session });
 
           results.push({ employeeId: p.employeeId, status: 'charged' });
@@ -208,7 +210,8 @@ class TripService {
             employeeId: p.employeeId,
             type: 'wallet_updated',
             title: 'Action Needed: Low Balance',
-            message: `Insufficient funds to pay ₹${p.fareShare} for your last trip. Please recharge your wallet.`
+            message: `Insufficient funds to pay ₹${p.fareShare} for your last trip. Please recharge your wallet.`,
+            link: `/wallet`
           }, { session });
         }
       }

@@ -147,7 +147,7 @@ const HelpCenter = () => {
                 </div>
                 <div>
                   <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Safety Desk</span>
-                  <span className="text-xs font-bold text-white">safety@commute.ent</span>
+                  <span className="text-xs font-bold text-white">safety@gopool.com</span>
                 </div>
               </div>
             </div>

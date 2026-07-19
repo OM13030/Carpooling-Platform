@@ -56,6 +56,15 @@ class TripRepository {
       .populate('vehicleId');
   }
 
+  async findOngoingTripForEmployee(employeeId) {
+    const participation = await TripParticipant.find({ employeeId });
+    const tripIds = participation.map(p => p.tripId);
+    return Trip.findOne({
+      _id: { $in: tripIds },
+      status: { $in: ['started', 'in_progress'] }
+    });
+  }
+
   async countTrips(filter) {
     return Trip.countDocuments(filter);
   }

@@ -1,4 +1,4 @@
-# COMMUTE.ENT — Enterprise Carpooling & Fleet Management Platform
+# GoPool — Enterprise Carpooling & Fleet Management Platform
 
 An enterprise-grade, production-ready carpooling and fleet management system designed for corporate employees and administrators. This platform enables employees to coordinate commute sharing, track active trips in real time, and settle fares securely via tokenized wallet balances, while allowing administrators to manage company parameters, fleet approvals, and employee access.
 
