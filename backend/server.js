@@ -23,6 +23,9 @@ const walletRoutes = require('./routes/wallet.routes');
 const miscRoutes = require('./routes/misc.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const supportMessageRoutes = require('./routes/supportMessage.routes');
+const vehicleExpenseRoutes = require('./routes/vehicleExpense.routes');
+const reportRoutes = require('./routes/report.routes');
+const fallbackRoutes = require('./routes/fallback.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -73,6 +76,9 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/misc', miscRoutes);
 app.use('/api/messages', supportMessageRoutes);
+app.use('/api/vehicle-expenses', vehicleExpenseRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api', fallbackRoutes);
 app.use('/api', settingsRoutes);
 
 // Error Middlewares
@@ -89,9 +95,15 @@ rideService.setupRecurringJob();
 async function startServer() {
   const preferredPort = Number(process.env.PORT || 5000);
   const PORT = await resolvePort(preferredPort);
+  const HOST = process.env.HOST || '0.0.0.0';
 
-  server.listen(PORT, () => {
-    logger.info(`Server listening on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  server.listen(PORT, HOST, () => {
+    logger.info(`Server listening on port ${PORT} at ${HOST} in ${process.env.NODE_ENV || 'development'} mode`);
+  });
+
+  server.on('error', (error) => {
+    logger.error(`Server error: ${error.message}`);
+    process.exit(1);
   });
 }
 

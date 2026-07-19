@@ -29,6 +29,7 @@ class RideRepository {
           near: { type: 'Point', coordinates: [parseFloat(pickupLng), parseFloat(pickupLat)] },
           distanceField: 'pickupDistance',
           spherical: true,
+          key: 'pickupPoint',
           query: {
             organizationId: new mongoose.Types.ObjectId(organizationId),
             status: 'scheduled',

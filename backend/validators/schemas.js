@@ -86,6 +86,31 @@ const updateProfileSchema = z.object({
   emergencyContact: z.string().optional()
 });
 
+const addVehicleExpenseSchema = z.object({
+  vehicleId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid vehicle ID'),
+  type: z.enum(['maintenance', 'insurance', 'fuel', 'other']),
+  amount: z.number().min(0, 'Amount must be at least 0'),
+  incurredOn: z.string().optional().transform((val) => (val ? new Date(val) : new Date())),
+  notes: z.string().optional()
+});
+
+const rideSearchSchema = z.object({
+  pickup: z.object({
+    lat: z.number().min(6).max(38, 'Latitude must be within India bounding box'),
+    lng: z.number().min(68).max(98, 'Longitude must be within India bounding box'),
+    address: z.string().min(1, 'Pickup address is required')
+  }),
+  destination: z.object({
+    lat: z.number().min(6).max(38, 'Latitude must be within India bounding box'),
+    lng: z.number().min(68).max(98, 'Longitude must be within India bounding box'),
+    address: z.string().min(1, 'Destination address is required')
+  }),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (HH:mm)'),
+  seats: z.number().int().min(1).max(6)
+});
+
+
 module.exports = {
   registerOrgSchema,
   registerEmployeeSchema,
@@ -94,5 +119,8 @@ module.exports = {
   createRequestSchema,
   addVehicleSchema,
   updateVehicleSchema,
-  updateProfileSchema
+  updateProfileSchema,
+  addVehicleExpenseSchema,
+  rideSearchSchema
 };
+

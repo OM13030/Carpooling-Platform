@@ -209,6 +209,101 @@ export const TripTracking = () => {
 
         {/* Sidebar Info & Chats */}
         <div className="lg:w-[35%] flex flex-col gap-6">
+          {/* Pickup Coordination Card (Persistent Chat + Call Rework) */}
+          <Card className="bg-[#121212] border-border p-4">
+            <h3 className="font-bold text-xs text-white uppercase tracking-wider mb-3">
+              Pickup Coordination
+            </h3>
+            
+            {isDriver ? (
+              <div className="space-y-3">
+                <span className="text-[10px] text-muted-foreground block">
+                  Passenger Contact List:
+                </span>
+                {coPassengers.length === 0 ? (
+                  <span className="text-xs text-muted-foreground italic">No passengers joined yet.</span>
+                ) : (
+                  <div className="space-y-2.5">
+                    {coPassengers.map((p, i) => {
+                      const emp = p.employeeId || {};
+                      return (
+                        <div key={i} className="flex items-center justify-between bg-[#222222]/30 p-2.5 rounded-xl border border-border/60">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs uppercase">
+                              {emp.name?.slice(0, 2) || 'PA'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-white text-xs">{emp.name || 'Passenger'}</div>
+                              <div className="text-[9px] text-muted-foreground">{emp.mobile || 'No Mobile'}</div>
+                            </div>
+                          </div>
+                          {emp.mobile && (
+                            <a
+                              href={`tel:${emp.mobile}`}
+                              className="bg-primary/20 border border-primary/40 text-primary p-2 rounded-lg hover:bg-primary/30 transition-colors"
+                              title={`Call ${emp.name}`}
+                            >
+                              <Phone size={13} className="fill-current text-primary" />
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-[#222222]/30 p-2.5 rounded-xl border border-border/60">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs uppercase">
+                      {activeTrip.driverId?.name?.slice(0, 2) || 'DR'}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-xs">Driver: {activeTrip.driverId?.name || 'Coworker'}</div>
+                      <div className="text-[9px] text-muted-foreground">{activeTrip.driverId?.mobile || 'No Mobile'}</div>
+                    </div>
+                  </div>
+                  {activeTrip.driverId?.mobile && (
+                    <a
+                      href={`tel:${activeTrip.driverId.mobile}`}
+                      className="bg-primary/20 border border-primary/40 text-primary p-2 rounded-lg hover:bg-primary/30 transition-colors"
+                      title="Call Driver"
+                    >
+                      <Phone size={13} className="fill-current text-primary" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Chat Triggers */}
+            <div className="mt-4 pt-3 border-t border-border/40">
+              <span className="text-[10px] text-muted-foreground block mb-2 font-medium">
+                Tap to Send Quick Message:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "I'm at the gate",
+                  "Running 2 min late",
+                  "Reached pickup point",
+                  "I'm here!"
+                ].map((txt) => (
+                  <button
+                    key={txt}
+                    type="button"
+                    onClick={() => {
+                      sendMessage(activeTrip._id, txt);
+                    }}
+                    className="bg-[#222222] hover:bg-[#333333] border border-border/60 text-muted-foreground hover:text-white px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all cursor-pointer"
+                  >
+                    {txt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Card>
+
           {/* Stepper Controls Card */}
           <Card className="bg-[#121212] border-border">
             <h3 className="font-bold text-sm text-white mb-3">Trip Actions</h3>

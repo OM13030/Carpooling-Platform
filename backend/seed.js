@@ -8,6 +8,7 @@ const Organization = require('./models/Organization');
 const Admin = require('./models/Admin');
 const Employee = require('./models/Employee');
 const Vehicle = require('./models/Vehicle');
+const VehicleExpense = require('./models/VehicleExpense');
 const Ride = require('./models/Ride');
 const RideRequest = require('./models/RideRequest');
 const Trip = require('./models/Trip');
@@ -31,6 +32,7 @@ const seedData = async () => {
     await Admin.deleteMany({});
     await Employee.deleteMany({});
     await Vehicle.deleteMany({});
+    await VehicleExpense.deleteMany({});
     await Ride.deleteMany({});
     await Trip.deleteMany({});
     await TripParticipant.deleteMany({});
@@ -131,6 +133,74 @@ const seedData = async () => {
       });
       vehicles.push(vehicle);
     }
+
+    // Add a second vehicle for employees[0] (Aarav Sharma) to show vehicle usage shares
+    const aaravSecondVehicle = await Vehicle.create({
+      employeeId: employees[0]._id,
+      registrationNumber: `GJ01AB9999`,
+      model: 'City',
+      manufacturer: 'Honda',
+      fuelType: 'petrol',
+      color: 'Black',
+      seatingCapacity: 4,
+      insuranceNumber: `INS-9999`,
+      insuranceExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      status: 'active'
+    });
+    vehicles.push(aaravSecondVehicle);
+
+    logger.info('Creating Vehicle Expenses...');
+    const currentMonth = new Date();
+    const expenseNotes = [
+      'Engine oil replacement and filter change',
+      'Annual vehicle insurance premium',
+      'Wheel alignment and balancing',
+      'Brake pad replacement',
+      'Car washing and detailing'
+    ];
+    for (let i = 0; i < 8; i++) {
+      const driver = employees[i];
+      const vehicle = vehicles[i];
+      
+      await VehicleExpense.create({
+        vehicleId: vehicle._id,
+        employeeId: driver._id,
+        type: 'maintenance',
+        amount: 1200 + (i * 150),
+        incurredOn: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 5 + i),
+        notes: expenseNotes[i % expenseNotes.length]
+      });
+
+      await VehicleExpense.create({
+        vehicleId: vehicle._id,
+        employeeId: driver._id,
+        type: 'insurance',
+        amount: 3500 + (i * 200),
+        incurredOn: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 2),
+        notes: 'Yearly insurance policy payment'
+      });
+      
+      if (i % 2 === 0) {
+        await VehicleExpense.create({
+          vehicleId: vehicle._id,
+          employeeId: driver._id,
+          type: 'other',
+          amount: 500,
+          incurredOn: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 12),
+          notes: 'Toll card recharge'
+        });
+      }
+    }
+
+    // New vehicle expense for Aarav's second vehicle
+    await VehicleExpense.create({
+      vehicleId: aaravSecondVehicle._id,
+      employeeId: employees[0]._id,
+      type: 'maintenance',
+      amount: 800,
+      incurredOn: new Date(new Date().getFullYear(), new Date().getMonth(), 15),
+      notes: 'Brake inspection and adjustment'
+    });
 
     logger.info('Creating Saved Places...');
     for (let i = 0; i < employees.length; i++) {
@@ -357,6 +427,143 @@ const seedData = async () => {
       method: 'wallet',
       status: 'success',
       description: 'Ride earnings (net of commission)'
+    });
+
+    // Seed past completed rides and trips for employees[0] (Aarav Sharma)
+    const date1 = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 4, 9, 0);
+    const ride1 = await Ride.create({
+      organizationId: org._id,
+      driverId: employees[0]._id,
+      vehicleId: vehicles[0]._id,
+      pickupPoint: { address: 'Sector 21, Gandhinagar', type: 'Point', coordinates: [72.6450, 23.2350] },
+      destination: { address: 'KSV Corporate Tower, Gandhinagar', type: 'Point', coordinates: [72.6369, 23.2156] },
+      departureDate: date1,
+      departureTime: '09:00 AM',
+      availableSeats: 3,
+      occupiedSeats: 2,
+      farePerSeat: 70,
+      estimatedDistanceKm: 8.5,
+      estimatedDurationMin: 15,
+      status: 'completed'
+    });
+
+    await Trip.create({
+      organizationId: org._id,
+      rideId: ride1._id,
+      driverId: employees[0]._id,
+      vehicleId: vehicles[0]._id,
+      startTime: date1,
+      endTime: new Date(date1.getTime() + 15 * 60 * 1000),
+      distanceKm: 8.5,
+      durationMin: 15,
+      fare: 140,
+      fuelCost: 55,
+      carbonSavedKg: 2.1,
+      status: 'payment_completed',
+      currentLocation: ride1.destination,
+      createdAt: date1
+    });
+
+    const date2 = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 8, 18, 0);
+    const ride2 = await Ride.create({
+      organizationId: org._id,
+      driverId: employees[0]._id,
+      vehicleId: vehicles[0]._id,
+      pickupPoint: { address: 'KSV Corporate Tower, Gandhinagar', type: 'Point', coordinates: [72.6369, 23.2156] },
+      destination: { address: 'Sector 28, Gandhinagar', type: 'Point', coordinates: [72.6500, 23.2500] },
+      departureDate: date2,
+      departureTime: '06:00 PM',
+      availableSeats: 3,
+      occupiedSeats: 1,
+      farePerSeat: 80,
+      estimatedDistanceKm: 10.2,
+      estimatedDurationMin: 18,
+      status: 'completed'
+    });
+
+    await Trip.create({
+      organizationId: org._id,
+      rideId: ride2._id,
+      driverId: employees[0]._id,
+      vehicleId: vehicles[0]._id,
+      startTime: date2,
+      endTime: new Date(date2.getTime() + 18 * 60 * 1000),
+      distanceKm: 10.2,
+      durationMin: 18,
+      fare: 80,
+      fuelCost: 65,
+      carbonSavedKg: 1.5,
+      status: 'payment_completed',
+      currentLocation: ride2.destination,
+      createdAt: date2
+    });
+
+    const date3 = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 12, 9, 30);
+    const ride3 = await Ride.create({
+      organizationId: org._id,
+      driverId: employees[0]._id,
+      vehicleId: aaravSecondVehicle._id,
+      pickupPoint: { address: 'Adalaj, Gandhinagar', type: 'Point', coordinates: [72.5800, 23.1700] },
+      destination: { address: 'KSV Corporate Tower, Gandhinagar', type: 'Point', coordinates: [72.6369, 23.2156] },
+      departureDate: date3,
+      departureTime: '09:30 AM',
+      availableSeats: 3,
+      occupiedSeats: 3,
+      farePerSeat: 90,
+      estimatedDistanceKm: 14.5,
+      estimatedDurationMin: 25,
+      status: 'completed'
+    });
+
+    await Trip.create({
+      organizationId: org._id,
+      rideId: ride3._id,
+      driverId: employees[0]._id,
+      vehicleId: aaravSecondVehicle._id,
+      startTime: date3,
+      endTime: new Date(date3.getTime() + 25 * 60 * 1000),
+      distanceKm: 14.5,
+      durationMin: 25,
+      fare: 270,
+      fuelCost: 90,
+      carbonSavedKg: 3.8,
+      status: 'payment_completed',
+      currentLocation: ride3.destination,
+      createdAt: date3
+    });
+
+    const date4 = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 19, 18, 15);
+    const ride4 = await Ride.create({
+      organizationId: org._id,
+      driverId: employees[0]._id,
+      vehicleId: aaravSecondVehicle._id,
+      pickupPoint: { address: 'KSV Corporate Tower, Gandhinagar', type: 'Point', coordinates: [72.6369, 23.2156] },
+      destination: { address: 'Infocity, Gandhinagar', type: 'Point', coordinates: [72.6100, 23.1900] },
+      departureDate: date4,
+      departureTime: '06:15 PM',
+      availableSeats: 3,
+      occupiedSeats: 2,
+      farePerSeat: 60,
+      estimatedDistanceKm: 7.0,
+      estimatedDurationMin: 12,
+      status: 'completed'
+    });
+
+    await Trip.create({
+      organizationId: org._id,
+      rideId: ride4._id,
+      driverId: employees[0]._id,
+      vehicleId: aaravSecondVehicle._id,
+      startTime: date4,
+      endTime: new Date(date4.getTime() + 12 * 60 * 1000),
+      distanceKm: 7.0,
+      durationMin: 12,
+      fare: 120,
+      fuelCost: 45,
+      carbonSavedKg: 1.8,
+      status: 'payment_completed',
+      currentLocation: ride4.destination,
+      createdAt: date4
     });
 
     // Add Audit Log

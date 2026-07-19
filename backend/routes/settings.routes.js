@@ -6,8 +6,8 @@ const { settingsSchema, savedPlaceSchema, paymentMethodSchema, helpTicketSchema 
 
 router.use(auth);
 
-router.get('/', settingsController.getSettings);
-router.put('/', validate(settingsSchema), settingsController.updateSettings);
+router.get('/settings', settingsController.getSettings);
+router.put('/settings', validate(settingsSchema), settingsController.updateSettings);
 
 router.get('/saved-places', settingsController.getSavedPlaces);
 router.post('/saved-places', validate(savedPlaceSchema), settingsController.createSavedPlace);

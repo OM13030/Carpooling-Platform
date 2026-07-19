@@ -7,7 +7,10 @@ export const MapView = ({
   destination,  // { coordinates: [lng, lat], address }
   vehicleLoc,   // [lat, lng]
   routePoints,  // array of [lat, lng]
-  height = '400px'
+  height = '400px',
+  onPickupChange,
+  onDestinationChange,
+  onMapClick
 }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -22,6 +25,16 @@ export const MapView = ({
   // Keep track of vehicle location for smooth sliding interpolation
   const lastVehicleLocRef = useRef(null);
   const animationFrameRef = useRef(null);
+
+  const onPickupChangeRef = useRef(onPickupChange);
+  const onDestinationChangeRef = useRef(onDestinationChange);
+  const onMapClickRef = useRef(onMapClick);
+
+  useEffect(() => {
+    onPickupChangeRef.current = onPickupChange;
+    onDestinationChangeRef.current = onDestinationChange;
+    onMapClickRef.current = onMapClick;
+  }, [onPickupChange, onDestinationChange, onMapClick]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -68,8 +81,35 @@ export const MapView = ({
     });
 
     // Save marker definitions
-    pickupMarkerRef.current = L.marker([0, 0], { icon: pickupIcon });
-    destMarkerRef.current = L.marker([0, 0], { icon: destIcon });
+    pickupMarkerRef.current = L.marker([0, 0], { 
+      icon: pickupIcon,
+      draggable: true
+    });
+    destMarkerRef.current = L.marker([0, 0], { 
+      icon: destIcon,
+      draggable: true
+    });
+
+    pickupMarkerRef.current.on('dragend', (e) => {
+      const { lat, lng } = e.target.getLatLng();
+      if (onPickupChangeRef.current) {
+        onPickupChangeRef.current(lat, lng);
+      }
+    });
+
+    destMarkerRef.current.on('dragend', (e) => {
+      const { lat, lng } = e.target.getLatLng();
+      if (onDestinationChangeRef.current) {
+        onDestinationChangeRef.current(lat, lng);
+      }
+    });
+
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      if (onMapClickRef.current) {
+        onMapClickRef.current(lat, lng);
+      }
+    });
 
     // Vehicle icon SVG
     const carSvg = `
